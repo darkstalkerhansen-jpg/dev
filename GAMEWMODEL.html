@@ -24,40 +24,27 @@
   #tutorialBtn { background: #00ccff; }
   #newGameBtn { background: #ff0000; }
 	#settingsBtn { background:#ff0000; }
-  #hideMessage {
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+  }
+  .Message {
     position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
     color: #ff4444; font-size: 2em; font-weight: bold; font-family: sans-serif;
     opacity: 0; transition: opacity 0.3s; z-index: 90; text-shadow: 2px 2px 4px #000;
     pointer-events: none;
   }
 
-	#hideMessage2 {
-    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-    color: #ff4444; font-size: 2em; font-weight: bold; font-family: sans-serif;
-    opacity: 0; transition: opacity 0.3s; z-index: 90; text-shadow: 2px 2px 4px #000;
-    pointer-events: none;
-  }
-
-#hideMessage3 {
-    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-    color: #ff4444; font-size: 2em; font-weight: bold; font-family: sans-serif;
-    opacity: 0; transition: opacity 0.3s; z-index: 90; text-shadow: 2px 2px 4px #000;
-    pointer-events: none;
-  }
-
-
-#hideMessage4 {
-    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-    color: #ff4444; font-size: 2em; font-weight: bold; font-family: sans-serif;
-    opacity: 0; transition: opacity 0.3s; z-index: 90; text-shadow: 2px 2px 4px #000;
-    pointer-events: none;
-  }
-
-  #jumpscare {
+  #JUMPSCARE {
     display:none; position:fixed; top:0; left:0; width:100vw; height:100vh;
     background:#000; align-items:center; justify-content:center; z-index:100;
   }
-  #jumpscare img { width:60vw; }
+  #JUMPSCARE img { width:60vw; }
   #redOverlay {
     position: fixed; inset: 0; pointer-events: none; mix-blend-mode: screen;
     opacity: 0; transition: opacity 0.1s linear; z-index: 50;
@@ -95,14 +82,13 @@
   <button id="newGameBtn">NEW GAME (Nightmare)</button>
   <button id="settingsBtn">Settings</button>
 </div>
-<div id="jumpscare">
+<div id="JUMPSCARE">
   <img src="Jumpscare.jpeg">
-  <audio id="scream" src="https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b6c0e2.mp3"></audio>
-</div>
-<div id="hideMessage">IT WILL BE BACK<br>THEY ARE MANY</div>
-<div id="hideMessage2">IT HATES LIGHT<br><br><br><br><br><br><br><br><br>PRESS F</div>
-<div id="hideMessage3">THEY ARE HUNGRY<br>RUN<br><br>RUN<br>HIDE   RUNHI  DE<br>RUHINDE<br>RUNRUN  HIDE  RUN<br><br>RUN<br>PRESS SHIFT</div>
-<div id="hideMessage4"><br><br><br><br><br><br><br><br><br><br><br><br>HIDE IN THE CLOSET<br>PRESS E</div>
+  </div>
+<div id="C" class="Message">IT WILL BE BACK<br>THEY ARE MANY</div>
+<div id="L1" class="Message">IT HATES LIGHT<br><br><br><br><br><br><br><br><br>PRESS F</div>
+<div id="L2" class="Message">THEY ARE HUNGRY<br>RUN<br><br>RUN<br>HIDE   RUNHI  DE<br>RUHINDE<br>RUNRUN  HIDE  RUN<br><br>RUN<br>PRESS SHIFT</div>
+<div id="L25" class="Message"><br><br><br><br><br><br><br><br><br><br><br><br>HIDE IN THE CLOSET<br>PRESS E</div>
 <div id="levelInfo">Level: 1</div>
 <div id="redOverlay"></div>
 <div id="distortionOverlay"></div>
@@ -114,7 +100,7 @@
 <script>
 let camera, scene, renderer, flashlight, monster, monsterLight, exitDoor, corrupted;
 let moveF=0, moveB=0, moveL=0, moveR=0, velocity=new THREE.Vector3();
-let canMove=false, jumpscare=false, currentLevel=1, gameMode='tutorial';
+let canMove=false, jumpscare=false, currentLevel=0;
 let lookYaw=0, lookPitch=0, lastTouchX=0, lastTouchY=0, dragging=false;
 const clock = new THREE.Clock();
 let colliders = [];
@@ -127,6 +113,7 @@ let corruptedSpeed = 7.5, corruptedTimer = 0, corruptedActive = false, corrupted
 let flashlightFlashTimer = 0;
 let WASD=true;
 let RUN=false;
+let headBobTimer = 0;
 
 const redOverlay = document.getElementById('redOverlay');
 const distortionOverlay = document.getElementById('distortionOverlay');
@@ -135,24 +122,10 @@ const healthFill = document.getElementById('healthFill');
 const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
 
-function showHideMessage() {
-  hideMessage.style.opacity = '1';
-  setTimeout(() => hideMessage.style.opacity = '0', 3000);
-}
-
-function showHideMessage2() {
-  hideMessage2.style.opacity = '1';
-  setTimeout(() => hideMessage2.style.opacity = '0', 3000);
-}
-
-function showHideMessage3() {
-  hideMessage3.style.opacity = '1';
-  setTimeout(() => hideMessage3.style.opacity = '0', 3000);
-}
-
-function showHideMessage4() {
-  hideMessage4.style.opacity = '1';
-  setTimeout(() => hideMessage4.style.opacity = '0', 3000);
+function showHideMessage(messageId) {
+  const message = document.getElementById(messageId);
+  message.style.opacity = '1';
+  setTimeout(() => message.style.opacity = '0', 3000);
 }
 
 function updateHealthBar() {
@@ -204,8 +177,9 @@ function resetGameState() {
   observerStunTime = 0;
   corruptedTimer=hideCooldown=0; corruptedActive=false;
   flashlightFlashTimer = 0;
+  headBobTimer = 0;
   updateHealthBar(); redOverlay.style.opacity=0; redOverlay.className='';
-  distortionOverlay.style.opacity=0; hideMessage.style.opacity=0;
+  distortionOverlay.style.opacity=0; 
   levelInfo.textContent = `Level: ${currentLevel}`;
   if(renderer?.domElement?.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
 }
@@ -254,7 +228,7 @@ function spawnCorrupted() {
   loader.load('./Cave.glb', (gltf) => {
     corrupted = gltf.scene;
     corrupted.scale.set(0.4, 0.4, 0.4); // Adjusted smaller size
-    corrupted.position.set((Math.random()-0.5)*10, 0, -Math.random()*35-10);
+    corrupted.position.set((Math.random()-0.5)*10, -2, -Math.random()*35-10);
     corrupted.rotation.y = Math.random() * Math.PI * 2;
     
     // Add emissive red glow effect
@@ -291,7 +265,7 @@ function spawnCorrupted() {
     corrupted = new THREE.Mesh(new THREE.SphereGeometry(0.8,32,32), new THREE.MeshPhongMaterial({
       color: 0x550000, emissive: 0xaa0000, emissiveIntensity: 1.5
     }));
-    corrupted.position.set((Math.random()-0.5)*10, 1.6, -Math.random()*35-10);
+    corrupted.position.set((Math.random()-0.5)*10, -2, -Math.random()*35-10);
     scene.add(corrupted);
     corruptedActive = true;
     corruptedTimer = 0;
@@ -307,9 +281,9 @@ function hideInCloset() {
     return dist < 1.8 && col.geometry.parameters.width <= 1.5 && col.geometry.parameters.height >= 2;
   });
   if(nearCloset) {
-    hideCooldown = gameMode === 'tutorial' ? 4.0 : 2.5;
-    if(corruptedActive && corrupted) { scene.remove(corrupted); corruptedActive = false; }
-    showHideMessage();
+    hideCooldown = 8;
+    if(corruptedActive && corrupted) { scene.remove(corrupted); corruptedActive = false; corruptedP = 0;} 
+    showHideMessage('C');
     playSound('https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b6c0e2.mp3', false, 0.3);
   }
 }
@@ -321,8 +295,9 @@ function initLevel1() {
   camera.position.set(0,1.6,0);
   renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(window.innerWidth,window.innerHeight);
-  document.body.appendChild(renderer.domElement); 
-	showHideMessage2();
+  renderer.domElement.style.display = 'block';
+  document.body.appendChild(renderer.domElement);
+  showHideMessage('L1');
 
   const floorGeo = new THREE.PlaneGeometry(30,30);
   const floorMat = new THREE.MeshPhongMaterial({color:0x222222});
@@ -375,6 +350,7 @@ function initLevel1() {
       emissiveIntensity: 1.3
     })
   );
+  const playerPos = camera.position;
   monster.position.set(-10, 1.6, -10);
   scene.add(monster);
 
@@ -420,8 +396,9 @@ function initLevel2() {
   camera.position.set(0,1.6,0);
   renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.domElement.style.display = 'block';
   document.body.appendChild(renderer.domElement);
-	showHideMessage3(); showHideMessage4();
+  showHideMessage('L2');
 
 	scene.add(new THREE.AmbientLight(0x111122, 0.15));
   flashlight = new THREE.SpotLight(0xffffff, 4, 30, Math.PI/12, 0.8, 2);
@@ -459,6 +436,7 @@ function initLevel3() {
   camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,150);
   camera.position.set(0,1.6,0);
   renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.domElement.style.display = 'block';
   document.body.appendChild(renderer.domElement);
 
   scene.add(new THREE.AmbientLight(0x111122, 0.15));
@@ -515,6 +493,19 @@ function animate() {
     camera.position.x = Math.max(-bounds,Math.min(bounds,camera.position.x));
     camera.position.z = Math.max(-bounds*2,Math.min(bounds*2,camera.position.z));
 
+    // Head bob effect
+    const isMoving = moveF || moveB || moveL || moveR;
+    if (isMoving) {
+      headBobTimer += dt;
+      const bobFrequency = RUN ? 10 : 7; // Higher frequency when sprinting
+      const bobAmplitude = RUN ? 0.12 : 0.06; // Larger amplitude when sprinting
+      const bobAmount = Math.sin(headBobTimer * bobFrequency) * bobAmplitude;
+      camera.position.y = 1.6 + bobAmount;
+    } else {
+      headBobTimer = 0;
+      camera.position.y = 1.6;
+    }
+
     // Flashlight behavior (flicker vs flash)
     flashlight.visible = true;
     if (flashlightFlashTimer > 0) {
@@ -528,7 +519,7 @@ function animate() {
 
     camera.rotation.order = "YXZ"; camera.rotation.y = lookYaw; camera.rotation.x = lookPitch;
 
-    // Observer logic (all levels except tutorial L1 has no observer)
+    // Observer logic (all levels except tutorial L2 has no observer)
     if (monster && currentLevel != 2) {
       const playerPos = camera.position;
       const toMonsterVec = monster.position.clone().sub(playerPos);
@@ -597,18 +588,17 @@ if(currentLevel > 1 && corrupted) {
   const playerPos = camera.position;
   const toPlayer = playerPos.clone().sub(corrupted.position);
   const dist = toPlayer.length();
-  
   // Always look at player
   corrupted.lookAt(playerPos);
   // Adjust for model orientation (rotate 90 degrees on Y-axis)
-  corrupted.rotation.y += Math.PI / 2;
+  corrupted.rotation.y += Math.PI / -2;
   
   // Move toward player
   corrupted.position.add(toPlayer.clone().normalize().multiplyScalar(corruptedSpeed * dt));
   
   // Attack on contact
   if(dist < 2.0 && hideCooldown <= 0) {
-    applyDamage(0.5);
+    applyDamage(0.5); corruptedP = 3
     // Pulse effect
     const baseScale = 0.01;
     corrupted.scale.setScalar(baseScale * 1);
@@ -616,7 +606,7 @@ if(currentLevel > 1 && corrupted) {
   }
   
   if(!corruptedActive) corruptedTimer += dt;
-  if(!corruptedActive && corruptedTimer > (gameMode === 'tutorial' ? 15 : 8) + Math.random() * 8) {
+  if(!corruptedActive && corruptedTimer > 10 + Math.random() * 8) {
     corruptedTimer = 0; 
     spawnCorrupted();
   }
@@ -661,15 +651,7 @@ function nextLevel() {
 }
 
 function triggerJumpscare() {
-  jumpscare=true; redOverlay.style.opacity=distortionOverlay.style.opacity=0;
-  document.getElementById('jumpscare').style.display='flex';
-  const scream = document.getElementById('scream'); scream.currentTime=0; scream.play();
-  setTimeout = () => {
-    document.getElementById('jumpscare').style.display='none';
-    document.getElementById('instructions').style.display='flex';
-    document.getElementById('instructions').innerHTML='<h1>You DIED!</h1><p><button id="tutorialBtn">Tutorial</button><br><button id="newGameBtn">Nightmare</button></p>';
-    canMove=false;
-  },2500;
+  jumpscare=true; document.getElementById('JUMPSCARE').style.display='flex';
 }
 
 	document.addEventListener('keydown', e => {
@@ -749,12 +731,12 @@ document.getElementById('tutorialBtn').onclick = () => {
 };
 
 document.getElementById('newGameBtn').onclick = () => {
-  gameMode = 'nightmare'; document.getElementById('instructions').style.display='none';
+  document.getElementById('instructions').style.display='none';
   resetGameState(); canMove=true; currentLevel=3; initLevel3(); setTimeout(setupTouchControls,500); let WASD=true;
 };
 
 document.getElementById('settingsBtn').onclick = () => {
-	gameMode = 'nightmare'; document.getElementById('instructions').style.display='none';
+	document.getElementById('instructions').style.display='none';
   resetGameState(); canMove=true; currentLevel=3; initLevel3(); setTimeout(setupTouchControls,500);
 	let WASD=false;
 };
