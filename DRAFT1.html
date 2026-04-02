@@ -637,7 +637,9 @@ if(currentLevel > 1 && corrupted) {
     distortionOverlay.style.opacity = 0; camera.rotation.z = 0;
   }
 
-  if(renderer && scene && camera) renderer.render(scene, camera);
+  if(renderer && scene && camera) {
+    renderer.render(scene, camera);
+  }
 }
 
 function nextLevel() {
@@ -670,6 +672,7 @@ function triggerJumpscare() {
   		if(e.code==='KeyS') moveB=0;
   		if(e.code==='KeyA') moveL=0;
   		if(e.code==='KeyD') moveR=0;
+      if(e.code==='KeyE') INTERACT = 0;
 		if(e.code==='ShiftLeft') RUN=false;
 	});
 	
