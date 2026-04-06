@@ -62,6 +62,15 @@
     width: 220px; height: 18px; border: 2px solid #444; background: rgba(0,0,0,0.6);
     border-radius: 10px; overflow: hidden; z-index: 80;
   }
+  #batteryBar {
+    position: fixed; top: 16px; left: 50%; transform: translateX(+50%);
+    width: 220px; height: 18px; border: 2px solid #444; background: rgba(0,0,0,0.6);
+    border-radius: 10px; overflow: hidden; z-index: 80;
+  }
+  #batteryFill {
+    height: 100%; width: 100%; background: linear-gradient(to right, #00ff66, #f7ff00);
+    transition: width 0.15s ease-out, background 0.2s linear;
+  }
   #healthFill {
     height: 100%; width: 100%; background: linear-gradient(to right, #00ff66, #f7ff00);
     transition: width 0.15s ease-out, background 0.2s linear;
@@ -92,10 +101,12 @@
 <div id="A" class="Message">.....A flashlight....</div>
 <div id="B" class="Message">Where am i?....</div>
 <div id="N" class="Message">[press F to flash]</div>
+<div id="Q" class="Message">out of battery....</div>
 <div id="levelInfo">Level: 1</div>
 <div id="redOverlay"></div>
 <div id="distortionOverlay"></div>
 <div id="healthBar"><div id="healthFill"></div></div>
+<div id="batteryBar"><div id="batteryFill"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
@@ -109,7 +120,7 @@ const clock = new THREE.Clock();
 let colliders = [];
 let rendererDom = null, mouseDown = false;
 let monsterPulseTime = 0, monsterTwitchTimer = 0;
-let playerHP = 100;
+let playerHP = 100, BATTERY = 100;
 let observerLOSTimer = 0, observerJustAttacked = false, observerCooldown = 0, distortionTime = 0;
 let observerStunTime = 0;
 let corruptedSpeed = 7.5, corruptedTimer = 0, corruptedActive = false, corruptedP = 0, hideCooldown = 0;
@@ -124,6 +135,8 @@ const redOverlay = document.getElementById('redOverlay');
 const distortionOverlay = document.getElementById('distortionOverlay');
 const healthBar = document.getElementById('healthBar');
 const healthFill = document.getElementById('healthFill');
+const batteryBar = document.getElementById('batteryBar');
+const batteryFill = document.getElementById('batteryFill');
 const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
 
@@ -141,6 +154,22 @@ function updateHealthBar() {
   else healthFill.style.background = 'linear-gradient(to right, #ff3300, #990000)';
 }
 
+function updateBatteryBar() {
+  const pct = Math.max(0, Math.min(1, BATTERY / 100));
+  batteryFill.style.width = (pct * 100) + '%';
+  if (pct > 0.6) batteryFill.style.background = 'linear-gradient(to right, #00ff66, #f7ff00)';
+  else if (pct > 0.3) batteryFill.style.background = 'linear-gradient(to right, #f7ff00, #ff9900)';
+  else batteryFill.style.background = 'linear-gradient(to right, #ff3300, #990000)';
+}
+
+function applyBattery(amount) {
+  BATTERY = Math.max(0, BATTERY - amount);
+  updateBatteryBar();
+  if (BATTERY <= 0) {
+    showHideMessage('Q'); FLASHLIGHTON = false;
+  }
+}
+
 function applyDamage(amount) {
   playerHP = Math.max(0, playerHP - amount);
   updateHealthBar();
@@ -149,11 +178,11 @@ function applyDamage(amount) {
 
 function flashObserver() {
   if (FLASHLIGHTON) {
-    if (currentLevel === 1) {
+    if (currentLevel != 0) {
 
       // start a short flash window
       flashlightFlashTimer = 0.15; // 150 ms strong flash
-
+      applyBattery(5);
       const playerPos = camera.position;
       const toMonster = monster.position.clone().sub(playerPos);
       const dist = toMonster.length();
