@@ -118,6 +118,7 @@ let WASD=true;
 let RUN=false;
 let headBobTimer = 0;
 let INTERACT = 0;
+Flashlyte = 0x800000;
 
 const redOverlay = document.getElementById('redOverlay');
 const distortionOverlay = document.getElementById('distortionOverlay');
@@ -296,7 +297,7 @@ function hideInCloset() {
 }
 
 function PickUpFlashlight() {
-  scene.remove(FLASHOBJ); FLASHLIGHTON = true; colliders.reverse(FLASHOBJ);
+  scene.remove(FLASHOBJ); FLASHLIGHTON = true; colliders = colliders.filter(c => c !== FLASHOBJ);
 }
 
 function LVL1() {
@@ -338,7 +339,7 @@ function LVL1() {
   scene.add(FLASHOBJ);
   colliders.push(FLASHOBJ);
 
-    flashlight = new THREE.SpotLight(0xffffff, 6, 16, Math.PI/10, 0.6, 1.5);
+    flashlight = new THREE.SpotLight(Flashlyte, 6, 16, Math.PI/10, 0.6, 1.5);
     flashlight.position.set(0, 0, 0);
     flashlight.target.position.set(0, 0, -1);
     camera.add(flashlight);
@@ -400,7 +401,7 @@ function initLevel1() {
 
   scene.add(new THREE.AmbientLight(0x222233, 0.13));
 
-  flashlight = new THREE.SpotLight(0xffffff, 6, 16, Math.PI/10, 0.6, 1.5);
+  flashlight = new THREE.SpotLight(Flashlyte, 6, 16, Math.PI/10, 0.6, 1.5);
   flashlight.position.set(0, 0, 0);
   flashlight.target.position.set(0, 0, -1);
   camera.add(flashlight);
