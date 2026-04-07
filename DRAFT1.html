@@ -98,10 +98,12 @@
 <div id="L1" class="Message">IT HATES LIGHT<br><br><br><br><br><br><br><br><br>PRESS F</div>
 <div id="L2" class="Message">THEY ARE HUNGRY<br>RUN<br><br>RUN<br>HIDE   RUNHI  DE<br>RUHINDE<br>RUNRUN  HIDE  RUN<br><br>RUN<br>PRESS SHIFT</div>
 <div id="L25" class="Message"><br><br><br><br><br><br><br><br><br><br><br><br>HIDE IN THE CLOSET<br>PRESS E</div>
-<div id="A" class="Message">.....A flashlight....</div>
+<div id="A" class="Message">.....A flashlight....<br>[PRESS E]</div>
 <div id="B" class="Message">Where am i?....</div>
 <div id="N" class="Message">[press F to flash]</div>
 <div id="Q" class="Message">out of battery....</div>
+<div id="W" class="Message">Where does this wire lead?...<br>Maybe I can find a way out...</div>
+<div id="E" class="Message">I see a door!<br>but it doesnt lead outside...</div>
 <div id="levelInfo">Level: 1</div>
 <div id="coordsInfo" style="position: fixed; top: 45px; right: 20px; color: #fff; font-family: sans-serif; font-size: 1.2em; z-index: 85; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 5px;">Pos: (0.0, 1.6, 0.0)</div>
 <div id="redOverlay"></div>
@@ -130,7 +132,7 @@ let WASD=true;
 let RUN=false;
 let headBobTimer = 0;
 let INTERACT = 0;
-Flashlyte = 0x800000;
+Flashlyte = 0xffffff;
 
 const redOverlay = document.getElementById('redOverlay');
 const distortionOverlay = document.getElementById('distortionOverlay');
@@ -359,16 +361,20 @@ function LVL1() {
 
 
   FLASHOBJ= new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.5, 0.5),
+    new THREE.BoxGeometry(0.2, 0.2, 0.5),
     new THREE.MeshPhongMaterial({
-      color:0x999999,
-      emissive:0x003300,
+      color:0x111111,
+      emissive:0xffffff,
+      emissiveIntensity: 0.5,
     })
   );
     
-  FLASHOBJ.position.set(8,1,0);
+  FLASHOBJ.position.set(8,0,0);
   scene.add(FLASHOBJ);
   colliders.push(FLASHOBJ);
+  FLASHLyght = new THREE.PointLight(0xffffff, 1.2, 6);
+  FLASHOBJ.add(FLASHLyght);
+
 
     flashlight = new THREE.SpotLight(Flashlyte, 6, 16, Math.PI/10, 0.6, 1.5);
     flashlight.position.set(0, 0, 0);
@@ -384,14 +390,73 @@ function LVL1() {
   for(let i=-15;i<=15;i+=30){
     addWall(i,1.5,0,0.5,3,30,0x444444);
   }
-  addWall(5,1,3,9,2,0.3);
-  addWall(8,1,4,12,2,0.3);
-  addWall(-4,1,-4,0.5,2,10);
-  addWall(9,1,0,0.5,2,10);
-  addWall(9,1,0,0.5,2,8);
-  addWall(2,1,-4,15,2,0.5);
-  addWall(2,0,-10,100,0.2,0.5,0xAA0000);
-  addWall(-10,0,3,0.5,0.2,100,0xAA0000);
+  addWall(1,1,15,0.5,4,10);
+  addWall(8,1,5,15,4,0.3);
+  addWall(-5.3,1,-4,0.5,4,5);
+  addWall(9,1,0.5,0.5,4,9.2);
+  addWall(2,1,-4,14.5,4,0.5);
+  addWall(12.5,0,-5,0.8,0.5,0.8,0x8c8573);
+  addWall(12.5,0,-5,0.3,0.6,0.3,0xf2ad0d);
+
+  ONE = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.2, 5.5),
+    new THREE.MeshPhongMaterial({
+      color:0x111111,
+      emissive:0xAA0000,
+      emissiveIntensity: 0.5,
+    })
+  );
+
+  TWO= new THREE.Mesh(
+    new THREE.BoxGeometry(14.5, 0.2, 0.5),
+    new THREE.MeshPhongMaterial({
+      color:0x111111,
+      emissive:0xAA0000,
+      emissiveIntensity: 0.5,
+    })
+  );
+
+  THRE = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.2, 13),
+    new THREE.MeshPhongMaterial({
+      color:0x111111,
+      emissive:0xAA0000,
+      emissiveIntensity: 0.5,
+    })
+  );
+
+  FOUR = new THREE.Mesh(
+    new THREE.BoxGeometry(22.5, 0.2, 0.5),
+    new THREE.MeshPhongMaterial({
+      color:0x111111,
+      emissive:0xAA0000,
+      emissiveIntensity: 0.5,
+    })
+  );
+
+    ONE.position.set(12.5,0,-7.5);
+    TWO.position.set(-3,0,3);
+    THRE.position.set(-10,0,-3.5);
+    FOUR.position.set(1,0,-10);
+    scene.add(ONE);
+    scene.add(TWO);
+    scene.add(THRE);
+    scene.add(FOUR);
+    colliders.push(ONE);
+    colliders.push(TWO);
+    colliders.push(THRE);
+    colliders.push(FOUR);
+    ONELYTE = new THREE.PointLight(0xAA0000, 8, 6);
+    TWOLYTE = new THREE.PointLight(0xAA0000, 8, 6);
+    THRELYTE = new THREE.PointLight(0xAA0000, 8, 6);
+    FOURLYTE = new THREE.PointLight(0xAA0000, 8, 6);
+    ONE.add(ONELYTE);
+    TWO.add(TWOLYTE);
+    THRE.add(THRELYTE);
+    FOUR.add(FOURLYTE);
+
+
+
 
 
   exitDoor = new THREE.Mesh(
@@ -405,8 +470,8 @@ function LVL1() {
   scene.add(exitDoor);
   colliders.push(exitDoor);
  
- lookYaw = 0;
-  lookPitch = 0;
+ lookYaw = -Math.PI / 2;
+  lookPitch = -1;
  
   playerHP=100; updateHealthBar(); clock.getDelta(); animate();
 
@@ -636,7 +701,14 @@ function animate() {
     }
   }
 
-    
+  if (camera.position.x <= -5 && currentLevel === 0) {
+    showHideMessage('W');
+  }
+
+  if (camera.position.x >= 8 && camera.position.z <= -4 && currentLevel === 0) {
+    showHideMessage('E');
+  }
+  
     // Flashlight behavior (flicker vs flash)
 
       flashlight.visible = FLASHLIGHTON;
@@ -809,7 +881,7 @@ function triggerJumpscare() {
   		if(e.code==='KeyS') moveB=1;
   		if(e.code==='KeyA') moveL=1;
   		if(e.code==='KeyD') moveR=1;
-  		if(e.code==='KeyE') hideInCloset();
+  		if(e.code==='KeyE') hideInCloset(), INTERACT = 1;
   		if(e.code==='KeyF') flashObserver();
 		if(e.code==='ShiftLeft') RUN=true;
   		e.preventDefault();
@@ -829,7 +901,7 @@ function triggerJumpscare() {
   		if(e.code==='ArrowDown') moveB=1;
   		if(e.code==='ArrowLeft') moveL=1;
   		if(e.code==='ArrowRight') moveR=1;
-  		if(e.code==='KeyE') INTERACT=1;
+  		if(e.code==='KeyE') INTERACT = 1;
   		if(e.code==='KeyF') flashObserver();
 		if(e.code==='ShiftLeft') RUN=true;
   		e.preventDefault();
