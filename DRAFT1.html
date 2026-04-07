@@ -103,6 +103,7 @@
 <div id="N" class="Message">[press F to flash]</div>
 <div id="Q" class="Message">out of battery....</div>
 <div id="levelInfo">Level: 1</div>
+<div id="coordsInfo" style="position: fixed; top: 45px; right: 20px; color: #fff; font-family: sans-serif; font-size: 1.2em; z-index: 85; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 5px;">Pos: (0.0, 1.6, 0.0)</div>
 <div id="redOverlay"></div>
 <div id="distortionOverlay"></div>
 <div id="healthBar"><div id="healthFill"></div></div>
@@ -139,6 +140,7 @@ const batteryBar = document.getElementById('batteryBar');
 const batteryFill = document.getElementById('batteryFill');
 const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
+const coordsInfo = document.getElementById('coordsInfo');
 
 function showHideMessage(messageId) {
   const message = document.getElementById(messageId);
@@ -341,7 +343,7 @@ function LVL1() {
   showHideMessage('B');
   FLASHLIGHTON=false; INTERACT = 0;
   const playerpos = camera.position;
-  
+
   const floorGeo = new THREE.PlaneGeometry(30,30);
   const floorMat = new THREE.MeshPhongMaterial({color:0x222222});
   const floor = new THREE.Mesh(floorGeo, floorMat);
@@ -382,11 +384,15 @@ function LVL1() {
   for(let i=-15;i<=15;i+=30){
     addWall(i,1.5,0,0.5,3,30,0x444444);
   }
-  addWall(12,1,4,10,2,0.5);
-  addWall(4,1,-4,10,2,0.5);
-  addWall(12,1,-4,0.5,2,10);
-  addWall(12,1,0,0.5,2,10);
-  addWall(-10,1,0,0.5,2,10);
+  addWall(5,1,3,9,2,0.3);
+  addWall(8,1,4,12,2,0.3);
+  addWall(-4,1,-4,0.5,2,10);
+  addWall(9,1,0,0.5,2,10);
+  addWall(9,1,0,0.5,2,8);
+  addWall(2,1,-4,15,2,0.5);
+  addWall(2,0,-10,100,0.2,0.5,0xAA0000);
+  addWall(-10,0,3,0.5,0.2,100,0xAA0000);
+
 
   exitDoor = new THREE.Mesh(
     new THREE.BoxGeometry(2, 2, 0.2),
@@ -623,6 +629,12 @@ function animate() {
       headBobTimer = 0;
       camera.position.y = 1.6;
     }
+    
+    // Update player coordinates display
+    if (coordsInfo) {
+      coordsInfo.textContent = `Pos: (${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)})`;
+    }
+  }
 
     
     // Flashlight behavior (flicker vs flash)
@@ -773,7 +785,7 @@ if(currentLevel > 1 && corrupted) {
     renderer.render(scene, camera);
   }
 }
-}
+
 
 function nextLevel() {
   if (currentLevel === 0) {

@@ -62,6 +62,15 @@
     width: 220px; height: 18px; border: 2px solid #444; background: rgba(0,0,0,0.6);
     border-radius: 10px; overflow: hidden; z-index: 80;
   }
+  #batteryBar {
+    position: fixed; top: 16px; left: 50%; transform: translateX(+50%);
+    width: 220px; height: 18px; border: 2px solid #444; background: rgba(0,0,0,0.6);
+    border-radius: 10px; overflow: hidden; z-index: 80;
+  }
+  #batteryFill {
+    height: 100%; width: 100%; background: linear-gradient(to right, #00ff66, #f7ff00);
+    transition: width 0.15s ease-out, background 0.2s linear;
+  }
   #healthFill {
     height: 100%; width: 100%; background: linear-gradient(to right, #00ff66, #f7ff00);
     transition: width 0.15s ease-out, background 0.2s linear;
@@ -92,10 +101,12 @@
 <div id="A" class="Message">.....A flashlight....</div>
 <div id="B" class="Message">Where am i?....</div>
 <div id="N" class="Message">[press F to flash]</div>
+<div id="Q" class="Message">out of battery....</div>
 <div id="levelInfo">Level: 1</div>
 <div id="redOverlay"></div>
 <div id="distortionOverlay"></div>
 <div id="healthBar"><div id="healthFill"></div></div>
+<div id="batteryBar"><div id="batteryFill"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
@@ -109,7 +120,7 @@ const clock = new THREE.Clock();
 let colliders = [];
 let rendererDom = null, mouseDown = false;
 let monsterPulseTime = 0, monsterTwitchTimer = 0;
-let playerHP = 100;
+let playerHP = 100, BATTERY = 100;
 let observerLOSTimer = 0, observerJustAttacked = false, observerCooldown = 0, distortionTime = 0;
 let observerStunTime = 0;
 let corruptedSpeed = 7.5, corruptedTimer = 0, corruptedActive = false, corruptedP = 0, hideCooldown = 0;
@@ -118,11 +129,14 @@ let WASD=true;
 let RUN=false;
 let headBobTimer = 0;
 let INTERACT = 0;
+Flashlyte = 0x800000;
 
 const redOverlay = document.getElementById('redOverlay');
 const distortionOverlay = document.getElementById('distortionOverlay');
 const healthBar = document.getElementById('healthBar');
 const healthFill = document.getElementById('healthFill');
+const batteryBar = document.getElementById('batteryBar');
+const batteryFill = document.getElementById('batteryFill');
 const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
 
@@ -140,6 +154,22 @@ function updateHealthBar() {
   else healthFill.style.background = 'linear-gradient(to right, #ff3300, #990000)';
 }
 
+function updateBatteryBar() {
+  const pct = Math.max(0, Math.min(1, BATTERY / 100));
+  batteryFill.style.width = (pct * 100) + '%';
+  if (pct > 0.6) batteryFill.style.background = 'linear-gradient(to right, #00ff66, #f7ff00)';
+  else if (pct > 0.3) batteryFill.style.background = 'linear-gradient(to right, #f7ff00, #ff9900)';
+  else batteryFill.style.background = 'linear-gradient(to right, #ff3300, #990000)';
+}
+
+function applyBattery(amount) {
+  BATTERY = Math.max(0, BATTERY - amount);
+  updateBatteryBar();
+  if (BATTERY <= 0) {
+    showHideMessage('Q'); FLASHLIGHTON = false;
+  }
+}
+
 function applyDamage(amount) {
   playerHP = Math.max(0, playerHP - amount);
   updateHealthBar();
@@ -148,11 +178,11 @@ function applyDamage(amount) {
 
 function flashObserver() {
   if (FLASHLIGHTON) {
-    if (currentLevel === 1) {
+    if (currentLevel != 0) {
 
       // start a short flash window
       flashlightFlashTimer = 0.15; // 150 ms strong flash
-
+      applyBattery(5);
       const playerPos = camera.position;
       const toMonster = monster.position.clone().sub(playerPos);
       const dist = toMonster.length();
@@ -187,8 +217,7 @@ function resetGameState() {
   flashlightFlashTimer = 0;
   headBobTimer = 0;
   updateHealthBar(); redOverlay.style.opacity=0; redOverlay.className='';
-  distortionOverlay.style.opacity=0; 
-  levelInfo.textContent = `Level: ${currentLevel}`;
+  distortionOverlay.style.opacity=0;
   if(renderer?.domElement?.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
 }
 
@@ -297,7 +326,7 @@ function hideInCloset() {
 }
 
 function PickUpFlashlight() {
-  scene.remove(FLASHOBJ); FLASHLIGHTON = true;
+  scene.remove(FLASHOBJ); FLASHLIGHTON = true; colliders = colliders.filter(c => c !== FLASHOBJ);
 }
 
 function LVL1() {
@@ -312,6 +341,7 @@ function LVL1() {
   showHideMessage('B');
   FLASHLIGHTON=false; INTERACT = 0;
   const playerpos = camera.position;
+  let XX = playerpos.position.x, YY = playerpos.position.y, ZZ = playerpos.position.z;
   
   const floorGeo = new THREE.PlaneGeometry(30,30);
   const floorMat = new THREE.MeshPhongMaterial({color:0x222222});
@@ -339,7 +369,7 @@ function LVL1() {
   scene.add(FLASHOBJ);
   colliders.push(FLASHOBJ);
 
-    flashlight = new THREE.SpotLight(0xffffff, 6, 16, Math.PI/10, 0.6, 1.5);
+    flashlight = new THREE.SpotLight(Flashlyte, 6, 16, Math.PI/10, 0.6, 1.5);
     flashlight.position.set(0, 0, 0);
     flashlight.target.position.set(0, 0, -1);
     camera.add(flashlight);
@@ -353,10 +383,10 @@ function LVL1() {
   for(let i=-15;i<=15;i+=30){
     addWall(i,1.5,0,0.5,3,30,0x444444);
   }
-  addWall(-5,1,5,10,2,0.5);
-  addWall(5,1,-5,10,2,0.5);
-  addWall(0,1,-10,0.5,2,10);
-  addWall(10,1,0,0.5,2,10);
+  addWall(12,1,4,10,2,0.5);
+  addWall(4,1,-4,10,2,0.5);
+  addWall(12,1,-4,0.5,2,10);
+  addWall(12,1,0,0.5,2,10);
   addWall(-10,1,0,0.5,2,10);
 
   exitDoor = new THREE.Mesh(
@@ -401,7 +431,7 @@ function initLevel1() {
 
   scene.add(new THREE.AmbientLight(0x222233, 0.13));
 
-  flashlight = new THREE.SpotLight(0xffffff, 6, 16, Math.PI/10, 0.6, 1.5);
+  flashlight = new THREE.SpotLight(Flashlyte, 6, 16, Math.PI/10, 0.6, 1.5);
   flashlight.position.set(0, 0, 0);
   flashlight.target.position.set(0, 0, -1);
   camera.add(flashlight);
@@ -434,8 +464,8 @@ function initLevel1() {
   monster = new THREE.Mesh(
     new THREE.SphereGeometry(0.7, 32, 32),
     new THREE.MeshPhongMaterial({
-      color: 0x111111,
-      emissive: 0x220000,
+      color: 0x000000,
+      emissive: 0x000000,
       emissiveIntensity: 1.3
     })
   );
@@ -443,13 +473,13 @@ function initLevel1() {
   monster.position.set(-10, 1.6, -10);
   scene.add(monster);
 
-  monsterLight = new THREE.PointLight(0xff0000, 1.2, 6);
+  monsterLight = new THREE.PointLight(0x111111, 1.2, 6);
   monster.add(monsterLight);
 
   // Eyes of the observer
   const eyeGeo = new THREE.SphereGeometry(0.09, 16, 16);
   const eyeMat = new THREE.MeshPhongMaterial({
-      color: 0x000000,
+      color: 0xff0000,
       emissive: 0xff0000,
       emissiveIntensity: 2.5
   });
@@ -490,7 +520,7 @@ function initLevel2() {
   showHideMessage('L2');
 
 	scene.add(new THREE.AmbientLight(0x111122, 0.15));
-  flashlight = new THREE.SpotLight(0xffffff, 4, 30, Math.PI/12, 0.8, 2);
+  flashlight = new THREE.SpotLight(0xffffffff, 4, 30, Math.PI/12, 0.8, 2);
   flashlight.position.set(0,0,0); flashlight.target.position.set(0,0,-1);
   camera.add(flashlight); camera.add(flashlight.target); scene.add(camera);
 
@@ -651,8 +681,8 @@ function animate() {
             flashOffset.applyQuaternion(camera.quaternion);
             monster.position.copy(camera.position.clone().add(flashOffset));
 
-            applyDamage(currentLevel === 3 ? 20 : 10);
-            applyDamage(currentLevel === 1 ? 10 : 5);
+            applyDamage(currentLevel === 3 ? 50 : 10);
+            applyDamage(currentLevel === 1 ? 32 : 10);
             distortionTime = 3.0;
             observerCooldown = 4.0;
           }
@@ -724,8 +754,8 @@ if(currentLevel > 1 && corrupted) {
   if (currentLevel === 0) {
     if(camera.position.distanceTo(FLASHOBJ.position) < 1.8) {
       if(INTERACT===1) {
-        PickUpFlashlight(); showHideMessage('N'); FLASHLIGHTON=true;
-      } else {
+        PickUpFlashlight(); FLASHLIGHTON=true;
+      } else if(!FLASHLIGHTON) {
         showHideMessage('A')
       }
     }
