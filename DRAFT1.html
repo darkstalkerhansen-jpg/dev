@@ -45,6 +45,17 @@
     background:#000; align-items:center; justify-content:center; z-index:100;
   }
   #JUMPSCARE img { width:60vw; }
+  #ITKILLEDHIM {
+    display:none; position:fixed; top:20%; left:20%; width:58vw; height:50vh;
+    background:#000; align-items:center; justify-content:center; z-index:100;
+  }
+  #ITKILLEDHIM img { width:58vw; }
+  #IFIWASFASTER {
+    display:none; position:fixed; top:20%; left:25%; width:50vw; height:50vh;
+    background:#000; align-items:center; justify-content:center; z-index:100;
+  }
+  #IFIWASFASTER img { width:50vw; }
+
   #redOverlay {
     position: fixed; inset: 0; pointer-events: none; mix-blend-mode: screen;
     opacity: 0; transition: opacity 0.1s linear; z-index: 50;
@@ -93,14 +104,22 @@
 </div>
 <div id="JUMPSCARE">
   <img src="Jumpscare.jpeg">
-  </div>
+</div>
+  <div id="IFIWASFASTER">
+  <img src="IFIWASFASTER.jpeg">
+</div>
+  <div id="ITKILLEDHIM">
+  <img src="ITKILLEDHIM.jpeg">
+</div>
+
+
 <div id="C" class="Message">IT WILL BE BACK<br>THEY ARE MANY</div>
 <div id="L1" class="Message">IT HATES LIGHT<br><br><br><br><br><br><br><br><br>PRESS F</div>
 <div id="L2" class="Message">THEY ARE HUNGRY<br>RUN<br><br>RUN<br>HIDE   RUNHI  DE<br>RUHINDE<br>RUNRUN  HIDE  RUN<br><br>RUN<br>PRESS SHIFT</div>
 <div id="L25" class="Message"><br><br><br><br><br><br><br><br><br><br><br><br>HIDE IN THE CLOSET<br>PRESS E</div>
 <div id="A" class="Message">.....A flashlight....<br>[PRESS E]</div>
 <div id="B" class="Message">Where am i?....</div>
-<div id="N" class="Message">[press F to flash]</div>
+<div id="N" class="Message">I feel nauseous...</div>
 <div id="Q" class="Message">out of battery....</div>
 <div id="W" class="Message">Where does this wire lead?...<br>Maybe I can find a way out...</div>
 <div id="E" class="Message">I see a door!<br>but it doesnt lead outside...</div>
@@ -145,10 +164,15 @@ const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
 const coordsInfo = document.getElementById('coordsInfo');
 
-function showHideMessage(messageId, duration = 3000) {
-  const msg = document.getElementById(messageId);
-  msg.style.opacity = '1';
-  setTimeout(() => { msg.style.opacity = '0'; }, duration * 500);
+function showHideMessage(messageId, duration = 3000, show=true) {
+  if (show) {
+    const msg = document.getElementById(messageId);
+    msg.style.opacity = '1';
+    setTimeout(() => { msg.style.opacity = '0'; }, duration * 500);
+  } else {
+    const msg = document.getElementById(messageId);
+    msg.style.opacity = '0';
+  }
 }
 
 function updateHealthBar() {
@@ -334,6 +358,21 @@ function PickUpFlashlight() {
   scene.remove(FLASHOBJ); FLASHLIGHTON = true; colliders = colliders.filter(c => c !== FLASHOBJ);
 }
 
+function CUTSCENE(number) {
+  if (number === 1) {
+    document.getElementById('IFIWASFASTER').style.display='flex';
+    setTimeout(() => {
+      document.getElementById('IFIWASFASTER').style.display='none';
+      document.getElementById('ITKILLEDHIM').style.display='flex';
+    }, 1000);
+    setTimeout(() => {
+      document.getElementById('ITKILLEDHIM').style.display='none';
+      initLevel1(); canMove = true; WASD = true; setTimeout(setupTouchControls,500);
+
+    }, 2000);
+  }
+}
+
 function LVL1() {
   currentLevel = 0; scene = new THREE.Scene();
   scene.background = new THREE.Color(0x111122);
@@ -488,7 +527,8 @@ function initLevel1() {
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.domElement.style.display = 'block';
   document.body.appendChild(renderer.domElement);
-  showHideMessage('N', 4); showHideMessage('E', 0);
+  showHideMessage('N', 4, true); showHideMessage('E', 0, false);
+  canMove = true; WASD = true; setTimeout(setupTouchControls,500); FLASHLIGHTON=true;
 
   const floorGeo = new THREE.PlaneGeometry(30,30);
   const floorMat = new THREE.MeshPhongMaterial({color:0x222222});
@@ -562,7 +602,7 @@ function initLevel1() {
   monster.add(leftEye);
   monster.add(rightEye);
 
-  for(let i=0;i<10;i++){
+  for(let i=0;i<0;i++){
     let box = new THREE.Mesh(
       new THREE.BoxGeometry(1,1,1),
       new THREE.MeshPhongMaterial({color:0x333333})
@@ -705,11 +745,11 @@ function animate() {
   }
 
   if (camera.position.x <= -5 && currentLevel === 0) {
-    showHideMessage('W', 4); showHideMessage('A', 0);
+    showHideMessage('W', 4); showHideMessage('A', 0, false);
   }
 
   if (camera.position.x >= 8 && camera.position.z <= -4 && currentLevel === 0) {
-    showHideMessage('E', 4); showHideMessage('W', 0);
+    showHideMessage('E', 4); showHideMessage('W', 0, false);
   }
   
     // Flashlight behavior (flicker vs flash)
@@ -846,7 +886,7 @@ if(currentLevel > 1 && corrupted) {
       if(INTERACT===1) {
         PickUpFlashlight(); FLASHLIGHTON=true;
       } else if(!FLASHLIGHTON) {
-        showHideMessage('A', 5); showHideMessage('B', 0);
+        showHideMessage('A', 5); showHideMessage('B', 0, false);
       }
     }
   }
@@ -868,9 +908,9 @@ if(currentLevel > 1 && corrupted) {
 
 function nextLevel() {
   if (currentLevel === 0) {
-      resetGameState(); initLevel1(); canMove = true; setTimeout(setupTouchControls,500);
+      resetGameState(); CUTSCENE(1); canMove = true; setTimeout(setupTouchControls,500);
   } else if(currentLevel === 1) {
-    resetGameState(); initLevel2(); canMove = true; setTimeout(setupTouchControls,500);
+    resetGameState(); initLevel2(); canMove = true; setTimeout(setupTouchControls,300);
   } else {
     document.getElementById('instructions').style.display = 'flex';
     document.getElementById('instructions').innerHTML = '<h1>Tutorial Complete!</h1><p><button id="newGameBtn">Play Nightmare Mode</button></p>';
