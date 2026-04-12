@@ -37,10 +37,7 @@
     position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
     color: #ff4444; font-size: 2em; font-weight: bold; font-family: sans-serif;
     opacity: 0; transition: opacity 0.3s; z-index: 90; text-shadow: 2px 2px 4px #000;
-    pointer-events: none;
-  }
-
-  
+    pointer-events: none; }
 
 
 .zoom-image {
@@ -56,14 +53,28 @@
   }
 }
 
+.BLINK-image {
+  animation: BLINK2 5s blink alternate linear;
+}
+
+@keyframes BLINK2 {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
 
   #JUMPSCARE {
     display:none; position:fixed; top:0; left:0; width:100vw; height:100vh;
-    background:#000; align-items:center; justify-content:center; z-index:100;
+    background:#000; align-items:center; justify-content:center; z-index: 100;
   }
-  #JUMPSCARE img { width:60vw; }
+  #JUMPSCARE img { width:100%; height: 100%; object-fit: fill; }
   #ITKILLEDHIM {
-    display:none; position: fixed; width:100vw; height:91vh; background:#000; z-index:100; pointer-events: none; animation: none;
+    display:none; position: fixed; width:100vw; height:91vh; background:#000; z-index: 100; pointer-events: none; animation: none; 
   }
   #ITKILLEDHIM img { width:100%; height: 100%; object-fit: fill; }
   
@@ -73,12 +84,14 @@
   #IFIWASFASTER img { width:100%; height:100%; object-fit: fill; }
 
   #BLACK1 {
-    display:none; position:fixed; width: 100vw; height: 100vh; background:#000; pointer-events: none; Z-index: 100;
+    display:none; position:fixed; width: 100vw; height: 100vh; background:#000; 
+    pointer-events: none; Z-index: 100; animation: none;
   }
   #BLACK1 img { width:100%; height:100%; object-fit: fill; }
 
   #BLACK2 {
-    display:none; position:fixed; width: 100vw; height: 100vh; background:#000; pointer-events: none; z-index: 100;
+    display:none; position:fixed; width: 100vw; height: 100vh; background:#000; 
+    pointer-events: none; z-index: 100; animation: none;
   }
   #BLACK2 img { width:100%; height:100%; object-fit: fill; }
 
@@ -160,6 +173,7 @@
 <div id="E" class="Message">I see a door!<br>but it doesnt lead outside...</div>
 <div id="OUT" class="Message">I want out...</div>
 <div id="CANT" class="Message">What just happened... that <em><stong>thing</stong></em> is gone...</div>
+<div id="CUSTOM" class="Message"></div>
 <div id="levelInfo">Level: 1</div>
 <div id="coordsInfo" style="position: fixed; top: 45px; right: 20px; color: #fff; font-family: sans-serif; font-size: 1.2em; z-index: 85; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 5px;">Pos: (0.0, 1.6, 0.0)</div>
 <div id="redOverlay"></div>
@@ -201,7 +215,7 @@ const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
 const coordsInfo = document.getElementById('coordsInfo');
 
-function showHideMessage(messageId, duration = 3000, show=true) {
+function showHideMessage(messageId, duration = 3000, show=true,) {
   if (show) {
     const msg = document.getElementById(messageId);
     msg.style.opacity = '1';
@@ -211,6 +225,22 @@ function showHideMessage(messageId, duration = 3000, show=true) {
     msg.style.opacity = '0';
   }
 }
+
+function showCHideMessage(message, duration = 3000, show=true, color='#AA0000', top='50%') {
+  if (show) {
+    const msg = document.getElementById("CUSTOM");
+    msg.style.color = color;
+    msg.style.top = top;
+    msg.textContent = message;
+    msg.style.opacity = '1';
+    msg.style.zIndex = 100;
+    setTimeout(() => { msg.style.opacity = '0'; }, duration * 500);
+  } else {
+    const msg = document.getElementById("CUSTOM");
+    msg.style.opacity = '0';
+  }
+}
+
 
 function updateHealthBar() {
   const pct = Math.max(0, Math.min(1, playerHP / 100));
@@ -241,9 +271,9 @@ function applyDamage(amount) {
   updateHealthBar();
   if (playerHP <= 0 && !jumpscare && RON) {
     if(currentLevel === 1) {
-      CUTSCENE(2);
+      CUTSCENE(2, 1);
     } else if (currentLevel === 2) {
-      CUTSCENE(3); Corrupted = false; corruptedSpeed = 0;
+      CUTSCENE(3, 1); Corrupted = false; corruptedSpeed = 0;
       setTimeout(() => {
         RON = false;  
       }, 4000);
@@ -311,6 +341,32 @@ function checkCollision(newPos) {
   );
   return colliders.some(obj => playerBB.intersectsBox(new THREE.Box3().setFromObject(obj)));
 }
+function BLINK(element, times = 5, speed = 100) {
+  let count = 0;
+  
+  function blinkCycle() {
+    if (count >= times) return; // Stop after required blinks
+    
+    const ITKILLEDHIM = element
+    ITKILLEDHIM.style.display = 'block';
+    ITKILLEDHIM.style.opacity = '1';
+    
+    setTimeout(() => {
+      ITKILLEDHIM.style.display = 'none';
+      ITKILLEDHIM.style.opacity = '0';
+      count++;
+      if (count < times) {
+        setTimeout(blinkCycle, speed); // Schedule next blink
+      }
+    }, speed);
+  }
+  
+  blinkCycle(); // Start the sequence
+}
+
+
+
+
 
 function spawnMonsterNearPlayer() {
   if (!monster) return;
@@ -410,22 +466,27 @@ function PickUpFlashlight() {
   scene.remove(FLASHOBJ); FLASHLIGHTON = true; colliders = colliders.filter(c => c !== FLASHOBJ);
 }
 
-function CUTSCENE(number) {
+function CUTSCENE(number, section) {
+  const ITKILLEDHIM = document.getElementById('ITKILLEDHIM');
+  const IFIWASFASTER = document.getElementById('IFIWASFASTER');
+  const BLACK1 = document.getElementById('BLACK1');
+  const BLACK2 = document.getElementById('BLACK2');
+  if (section === 1) {
   if (number === 1) {
-    document.getElementById('IFIWASFASTER').style.display='block';
+    IFIWASFASTER.style.display='block';
     setTimeout(() => {
-      document.getElementById('IFIWASFASTER').style.display='none';
-      document.getElementById('ITKILLEDHIM').style.display='block';
+      IFIWASFASTER.style.display='none';
+      ITKILLEDHIM.style.display='block';
     }, 1000);
     setTimeout(() => {
-      document.getElementById('ITKILLEDHIM').style.display='none';
+      ITKILLEDHIM.style.display='none';
       initLevel1(); canMove = true; WASD = true; setTimeout(setupTouchControls,500);
 
     }, 2000);
   } else if (number === 2) {
     showHideMessage('OUT'); setTimeout(() => {
       showHideMessage('OUT', 0, false);
-      document.getElementById('ITKILLEDHIM').style.display='block';
+      ITKILLEDHIM.style.display='block';
     }, 2000);
     setTimeout(() => {
       document.getElementById('ITKILLEDHIM').style.display='none';
@@ -433,33 +494,60 @@ function CUTSCENE(number) {
     }, 4000);
   } else if (number === 3) {
     setTimeout(() => {
-      document.getElementById('ITKILLEDHIM').style.display='flex';
-      document.getElementById('ITKILLEDHIM').style.animation=('slowZoom 20s infinite alternate linear');
+      ITKILLEDHIM.style.display='flex';
+      ITKILLEDHIM.style.animation=('slowZoom 20s infinite alternate linear');
     }, 1000);
     setTimeout(() => {
-      document.getElementById('ITKILLEDHIM').style.display='none';
-      document.getElementById('ITKILLEDHIM').style.animation=('none');
-      document.getElementById('IFIWASFASTER').style.display='flex';
+      ITKILLEDHIM.style.display='none';
+      ITKILLEDHIM.style.animation=('none');
+      IFIWASFASTER.style.display='flex';
     }, 1500);
     setTimeout(() => {
-      document.getElementById('IFIWASFASTER').style.display='none';
-      document.getElementById('ITKILLEDHIM').style.display='block';
+      IFIWASFASTER.style.display='none';
+      ITKILLEDHIM.style.display='block';
     }, 2000);
     setTimeout(() => {
       scene.remove(corrupted); corruptedActive = false; corruptedP = 0;
-      document.getElementById('IFIWASFASTER').style.display='flex';
-      document.getElementById('IFIWASFASTER').style.animation=('slowZoom 20s infinite alternate linear');
+      IFIWASFASTER.style.display='flex';
+      IFIWASFASTER.style.animation=('slowZoom 20s infinite alternate linear');
     }, 4000);
     setTimeout(() => {
-      document.getElementById('ITKILLEDHIM').style.display='none';
-      document.getElementById('IFIWASFASTER').style.animation=('none');
-      document.getElementById('BLACK2').style.display='flex';
+      ITKILLEDHIM.style.display='none';
+      IFIWASFASTER.style.animation='none';
+      IFIWASFASTER.style.display='none';
+      BLACK2.style.display='block';
     }, 5000);
     setTimeout(() => {
-      document.getElementById('BLACK2').style.display='none';
-      document.getElementById('BLACK1').style.display='block';
+      BLACK1.style.display='block';
+      BLACK2.style.display='none';
     }, 7000);
+
+    setTimeout(() => {
+      showCHideMessage("right in front of him?", 3, true, '#AA0000', '10%');
+    }, 9000);
+    setTimeout(() => {
+      BLINK(document.getElementById('BLACK2'), 3, 2000);
+    }, 10000);
+    setTimeout(() => {
+      showCHideMessage("Yeah.. man it must have been horrifying", 3, true, '#ffffff', '70%');
+    }, 13000);
+    setTimeout(() => {
+      BLINK(document.getElementById('BLACK2'), 5, 500);
+      showCHideMessage("wait! he's waking up! charles?", 3, true, '#ffffff', '70%');
+    }, 16000);
+    setTimeout(() => {
+      showCHideMessage("Çħăřłęś?¿¿?", 3, true, '#AA0000', '50%');
+    }, 1900);
+    setTimeout(() => {
+      showCHideMessage("Çħăřłęś?¿¿?", 3, true, '#AA0000', '50%');
+      initLevel1(); canMove = true; WASD = true; setTimeout(setupTouchControls,500);
+      BLACK2.style.display='none';
+      BLACK1.style.display='none';
+    }, 18000);
   }
+} else if (section === 2) {
+
+}
 }
 
 function LVL1() {
@@ -471,10 +559,9 @@ function LVL1() {
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.domElement.style.display = 'block';
   document.body.appendChild(renderer.domElement);
-  showHideMessage('B', 5);
   FLASHLIGHTON=false; INTERACT = 0;
   const playerpos = camera.position;
-
+  
   const floorGeo = new THREE.PlaneGeometry(30,30);
   const floorMat = new THREE.MeshPhongMaterial({color:0x222222});
   const floor = new THREE.Mesh(floorGeo, floorMat);
@@ -1004,7 +1091,7 @@ if(currentLevel > 1 && corrupted) {
 
 function nextLevel() {
   if (currentLevel === 0) {
-      resetGameState(); CUTSCENE(1); canMove = true; setTimeout(setupTouchControls,500);
+      resetGameState(); CUTSCENE(1, 1); canMove = true; setTimeout(setupTouchControls,500);
   } else if(currentLevel === 1) {
     resetGameState(); initLevel2(); canMove = true; setTimeout(setupTouchControls,300);
   } else {
