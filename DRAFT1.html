@@ -35,7 +35,7 @@
   }
   .Message {
     position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-    color: #ff4444; font-size: 2em; font-weight: bold; font-family: sans-serif;
+    color: #191970; font-size: 2em; font-weight: bold; font-family: sans-serif;
     opacity: 0; transition: opacity 0.3s; z-index: 90; text-shadow: 2px 2px 4px #000;
     pointer-events: none; }
 
@@ -215,9 +215,14 @@ const hideMessage = document.getElementById('hideMessage');
 const levelInfo = document.getElementById('levelInfo');
 const coordsInfo = document.getElementById('coordsInfo');
 
-function showHideMessage(messageId, duration = 3000, show=true,) {
+function showHideMessage(messageId, duration = 3000, color=1, show=true) {
   if (show) {
     const msg = document.getElementById(messageId);
+    if (color === 1) {
+      msg.style.color = '#191970';
+    } else {
+      msg.style.color = '#AA0000';
+    }
     msg.style.opacity = '1';
     setTimeout(() => { msg.style.opacity = '0'; }, duration * 500);
   } else {
@@ -276,7 +281,7 @@ function applyDamage(amount) {
       CUTSCENE(3, 1); Corrupted = false; corruptedSpeed = 0;
       setTimeout(() => {
         RON = false;  
-      }, 4000);
+      }, 0);
    }
   }
 }
@@ -347,7 +352,7 @@ function BLINK(element, times = 5, speed = 100) {
   function blinkCycle() {
     if (count >= times) return; // Stop after required blinks
     
-    const ITKILLEDHIM = element
+    const ITKILLEDHIM = document.getElementById(element);
     ITKILLEDHIM.style.display = 'block';
     ITKILLEDHIM.style.opacity = '1';
     
@@ -449,17 +454,18 @@ function hideInCloset() {
     return dist < 1.8 && col.geometry.parameters.width <= 1.5 && col.geometry.parameters.height >= 2;
   });
   if(nearCloset) {
-    if (currentLevel >= 2) {}
+    if (currentLevel != 2) {
       hideCooldown = 8;
       if(corruptedActive && corrupted) { scene.remove(corrupted); corruptedActive = false; corruptedP = 0;} 
-      showHideMessage('C', 2);
+      showHideMessage('C', 2, 2);
       playSound('https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b6c0e2.mp3', false, 0.3);
     } else if (currentLevel === 2) {
       hideCooldown = 8;
       if(corruptedActive && corrupted) { scene.remove(corrupted); corruptedActive = false; corruptedP = 0;} 
-      showHideMessage('CANT', 2);
+      showHideMessage('CANT', 2, 2);
       playSound('https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b6c0e2.mp3', false, 0.3);
-  }
+    }
+  } 
 }
 
 function PickUpFlashlight() {
@@ -485,7 +491,7 @@ function CUTSCENE(number, section) {
     }, 2000);
   } else if (number === 2) {
     showHideMessage('OUT'); setTimeout(() => {
-      showHideMessage('OUT', 0, false);
+      showHideMessage('OUT', 0, 1, false);
       ITKILLEDHIM.style.display='block';
     }, 2000);
     setTimeout(() => {
@@ -494,56 +500,50 @@ function CUTSCENE(number, section) {
     }, 4000);
   } else if (number === 3) {
     setTimeout(() => {
-      ITKILLEDHIM.style.display='flex';
-      ITKILLEDHIM.style.animation=('slowZoom 20s infinite alternate linear');
+      resetGameState();
+      IFIWASFASTER.style.display='block';
+      IFIWASFASTER.style.animation=('slowZoom 20s infinite alternate linear');
     }, 1000);
     setTimeout(() => {
-      ITKILLEDHIM.style.display='none';
-      ITKILLEDHIM.style.animation=('none');
-      IFIWASFASTER.style.display='flex';
+      IFIWASFASTER.style.display='none';
+      IFIWASFASTER.style.animation=('none');
+      ITKILLEDHIM.style.display='block';
     }, 1500);
     setTimeout(() => {
-      IFIWASFASTER.style.display='none';
-      ITKILLEDHIM.style.display='block';
+      ITKILLEDHIM.style.display='none';
+      IFIWASFASTER.style.display='block';
     }, 2000);
     setTimeout(() => {
-      scene.remove(corrupted); corruptedActive = false; corruptedP = 0;
-      IFIWASFASTER.style.display='flex';
       IFIWASFASTER.style.animation=('slowZoom 20s infinite alternate linear');
     }, 4000);
     setTimeout(() => {
-      ITKILLEDHIM.style.display='none';
-      IFIWASFASTER.style.animation='none';
       IFIWASFASTER.style.display='none';
+      IFIWASFASTER.style.animation='none';
       BLACK2.style.display='block';
-    }, 5000);
+    }, 6000);
     setTimeout(() => {
       BLACK1.style.display='block';
       BLACK2.style.display='none';
-    }, 7000);
-
+    }, 8000);
     setTimeout(() => {
       showCHideMessage("right in front of him?", 3, true, '#AA0000', '10%');
-    }, 9000);
-    setTimeout(() => {
-      BLINK(document.getElementById('BLACK2'), 3, 2000);
     }, 10000);
     setTimeout(() => {
+      BLINK('BLACK2' , 2, 2000);
+    }, 11000);
+    setTimeout(() => {
       showCHideMessage("Yeah.. man it must have been horrifying", 3, true, '#ffffff', '70%');
-    }, 13000);
+    }, 14000);
     setTimeout(() => {
-      BLINK(document.getElementById('BLACK2'), 5, 500);
+      BLINK('BLACK2', 2, 100);
       showCHideMessage("wait! he's waking up! charles?", 3, true, '#ffffff', '70%');
-    }, 16000);
+    }, 17000);
     setTimeout(() => {
       showCHideMessage("Çħăřłęś?¿¿?", 3, true, '#AA0000', '50%');
-    }, 1900);
-    setTimeout(() => {
-      showCHideMessage("Çħăřłęś?¿¿?", 3, true, '#AA0000', '50%');
-      initLevel1(); canMove = true; WASD = true; setTimeout(setupTouchControls,500);
+      initLevel1(2); canMove = true; WASD = true; setTimeout(setupTouchControls,500); playerHP = 100;
       BLACK2.style.display='none';
       BLACK1.style.display='none';
-    }, 18000);
+    }, 19000);
   }
 } else if (section === 2) {
 
@@ -561,6 +561,7 @@ function LVL1() {
   document.body.appendChild(renderer.domElement);
   FLASHLIGHTON=false; INTERACT = 0;
   const playerpos = camera.position;
+  showHideMessage('B', 5);
   
   const floorGeo = new THREE.PlaneGeometry(30,30);
   const floorMat = new THREE.MeshPhongMaterial({color:0x222222});
@@ -694,8 +695,8 @@ function LVL1() {
 
 }
 
-function initLevel1() {
-  currentLevel = 1; scene = new THREE.Scene();
+function initLevel1(iteration=1) {
+  currentLevel = iteration === 1? 1 : 0.5; scene = new THREE.Scene();
   scene.background = new THREE.Color(0x111122);
   camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,150);
   camera.position.set(0,1.6,0);
@@ -703,7 +704,17 @@ function initLevel1() {
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.domElement.style.display = 'block';
   document.body.appendChild(renderer.domElement);
-  showHideMessage('N', 4, true); showHideMessage('E', 0, false);
+  if (iteration === 1) {
+    showHideMessage('N', 4); 
+  } else {
+    showCHideMessage("My name is charles...", 3, true, '#191970', '10%');
+  }
+  
+  if (iteration === 2) { 
+    setTimeout(() => { BLINK('BLACK2', 2, 1000); }, 7000);
+  }
+
+  showHideMessage('E', 0, 1, false);
   canMove = true; WASD = true; setTimeout(setupTouchControls,500); FLASHLIGHTON=true;
 
   const floorGeo = new THREE.PlaneGeometry(30,30);
@@ -732,12 +743,21 @@ function initLevel1() {
   for(let i=-15;i<=15;i+=30){
     addWall(i,1.5,0,0.5,3,30,0x444444);
   }
-  addWall(-5,1,5,10,2,0.5);
-  addWall(5,1,-5,10,2,0.5);
-  addWall(0,1,-10,0.5,2,10);
-  addWall(10,1,0,0.5,2,10);
-  addWall(-10,1,0,0.5,2,10);
+ 
 
+  if (iteration === 1) {
+    addWall(-5,1,5,10,2,0.5);
+    addWall(5,1,-5,10,2,0.5);
+    addWall(0,1,-10,0.5,2,10);
+    addWall(10,1,0,0.5,2,10);
+    addWall(-10,1,0,0.5,2,10);
+  } else {
+    addWall(9,1,2,10,2,0.5);
+    addWall(-3,1,6,0.5,2,10);
+    addWall(1,1,-10,0.5,2,10);
+    addWall(10,1,7,0.5,2,10);
+    addWall(5,1,7,10,2,0.5);
+  }
 
 
   exitDoor = new THREE.Mesh(
@@ -748,46 +768,51 @@ function initLevel1() {
     })
   );
   exitDoor.position.set(13,1,0);
-  scene.add(exitDoor);
-  colliders.push(exitDoor);
+  if (iteration === 1) {
+    scene.add(exitDoor);
+    colliders.push(exitDoor);
+  }
 
-  monster = new THREE.Mesh(
-    new THREE.SphereGeometry(0.7, 32, 32),
-    new THREE.MeshPhongMaterial({
-      color: 0x000000,
-      emissive: 0x000000,
-      emissiveIntensity: 1.3
-    })
-  );
-  const playerPos = camera.position;
-  monster.position.set(-10, 1.6, -10);
-  scene.add(monster);
-
-  monsterLight = new THREE.PointLight(0x111111, 1.2, 6);
-  monster.add(monsterLight);
-
-  // Eyes of the observer
-  const eyeGeo = new THREE.SphereGeometry(0.09, 16, 16);
-  const eyeMat = new THREE.MeshPhongMaterial({
-      color: 0xff0000,
-      emissive: 0xff0000,
-      emissiveIntensity: 2.5
-  });
-  const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-  const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-  leftEye.position.set(-0.17, 0.05, 0.68);
-  rightEye.position.set(0.17, 0.05, 0.68);
-  monster.add(leftEye);
-  monster.add(rightEye);
-
-    
-  for(let i=0;i<100;i++){
-    let box = new THREE.Mesh(
-      new THREE.BoxGeometry(1,1,1),
-      new THREE.MeshPhongMaterial({color:0x333333})
+  if (iteration === 1) {
+    monster = new THREE.Mesh(
+      new THREE.SphereGeometry(0.7, 32, 32),
+      new THREE.MeshPhongMaterial({
+        color: 0x000000,
+        emissive: 0x000000,
+        emissiveIntensity: 1.3
+      })
     );
-    box.position.set(-12+Math.random()*24,0.5,-12+Math.random()*24);
-    scene.add(box);
+    const playerPos = camera.position;
+    monster.position.set(-10, 1.6, -10);
+    scene.add(monster);
+
+    monsterLight = new THREE.PointLight(0x111111, 1.2, 6);
+    monster.add(monsterLight);
+
+    // Eyes of the observer
+    const eyeGeo = new THREE.SphereGeometry(0.09, 16, 16);
+    const eyeMat = new THREE.MeshPhongMaterial({
+        color: 0xff0000,
+        emissive: 0xff0000,
+        emissiveIntensity: 2.5
+    });
+    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+    leftEye.position.set(-0.17, 0.05, 0.68);
+    rightEye.position.set(0.17, 0.05, 0.68);
+    monster.add(leftEye);
+    monster.add(rightEye);
+  }
+
+  if (iteration === 1) {
+    for(let i=0;i<100;i++){
+      let box = new THREE.Mesh(
+        new THREE.BoxGeometry(1,1,1),
+        new THREE.MeshPhongMaterial({color:0x333333})
+      );
+      box.position.set(-12+Math.random()*24,0.5,-12+Math.random()*24);
+      scene.add(box);
+    }
   }
         
       
@@ -812,7 +837,7 @@ function initLevel2() {
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.domElement.style.display = 'block';
   document.body.appendChild(renderer.domElement);
-  showHideMessage('L2', 4);
+  showHideMessage('L2', 4, 2);
 
 	scene.add(new THREE.AmbientLight(0x111122, 0.15));
   flashlight = new THREE.SpotLight(0xffffffff, 4, 30, Math.PI/12, 0.8, 2);
@@ -837,7 +862,7 @@ function initLevel2() {
     addWall(3.2,1.1,i,1.5,2.2,1.5);
   }
 
-  exitDoor = new THREE.Mesh(new THREE.BoxGeometry(2,2,0.2), new THREE.MeshPhongMaterial({color:0x00ff00, emissive:0x002200}));
+  exitDoor = new THREE.Mesh(new THREE.BoxGeometry(6,2,0.2), new THREE.MeshPhongMaterial({color:0x00ff00, emissive:0x002200}));
   exitDoor.position.set(0,1,26); scene.add(exitDoor); colliders.push(exitDoor);
 
   spawnCorrupted(); corruptedSpeed = 9;
@@ -928,11 +953,11 @@ function animate() {
   }
 
   if (camera.position.x <= -5 && currentLevel === 0) {
-    showHideMessage('W', 4); showHideMessage('A', 0, false);
+    showHideMessage('W', 4); showHideMessage('A', 0, 1, false);
   }
 
   if (camera.position.x >= 8 && camera.position.z <= -4 && currentLevel === 0) {
-    showHideMessage('E', 4); showHideMessage('W', 0, false);
+    showHideMessage('E', 4); showHideMessage('W', 0, 1, false);
   }
   
     // Flashlight behavior (flicker vs flash)
@@ -990,8 +1015,7 @@ function animate() {
             flashOffset.applyQuaternion(camera.quaternion);
             monster.position.copy(camera.position.clone().add(flashOffset));
 
-            applyDamage(currentLevel === 3 ? 50 : 10);
-            applyDamage(currentLevel === 1 ? 32 : 10);
+            applyDamage(currentLevel === 1? 50 : 25);
             distortionTime = 3.0;
             observerCooldown = 4.0;
           }
@@ -1052,6 +1076,8 @@ if(currentLevel > 1 && corrupted) {
       document.getElementById('instructions').innerHTML = '<h1>You ESCAPED THE NIGHTMARE!</h1><p><button id="newGameBtn">Play Again</button><br><button id="tutorialBtn">Tutorial</button></p>';
       canMove = false;
     } else if(currentLevel === 1) {
+      nextLevel();
+    } else if(currentLevel === 0.5) {
       nextLevel(); 
     } else if(currentLevel === 0) {
       nextLevel();
@@ -1069,7 +1095,7 @@ if(currentLevel > 1 && corrupted) {
       if(INTERACT===1) {
         PickUpFlashlight(); FLASHLIGHTON=true;
       } else if(!FLASHLIGHTON) {
-        showHideMessage('A', 5); showHideMessage('B', 0, false);
+        showHideMessage('A', 5); showHideMessage('B', 0, 1, false);
       }
     }
   }
@@ -1094,6 +1120,8 @@ function nextLevel() {
       resetGameState(); CUTSCENE(1, 1); canMove = true; setTimeout(setupTouchControls,500);
   } else if(currentLevel === 1) {
     resetGameState(); initLevel2(); canMove = true; setTimeout(setupTouchControls,300);
+  } else if(currentLevel === 0.5) {
+    resetGameState(); initLevel3(); canMove = true; setTimeout(setupTouchControls,300);
   } else {
     document.getElementById('instructions').style.display = 'flex';
     document.getElementById('instructions').innerHTML = '<h1>Tutorial Complete!</h1><p><button id="newGameBtn">Play Nightmare Mode</button></p>';
