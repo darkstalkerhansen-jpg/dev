@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Search Proxy</title>
+</head>
+<body>
+    <button onclick="randomSearch()">Go to Random Search</button>
+
+    <script>
+        function randomSearch() {
+            const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            let result = "";
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            // THIS LINE CHANGES IT FROM OPENING A NEW TAB TO PROXYING
+            window.location.href = "https://www.youtube.com/search?q=" + result;
+        }
+    </script>
+</body>
+</html>
