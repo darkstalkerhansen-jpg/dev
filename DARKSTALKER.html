@@ -4,9 +4,13 @@
   <title>Random Search Generator</title>
 </head>
 <body>
-  <button onclick="randomSearch()">Search Random Stuff</button>
-&lt;IMPORTANT!!! if you did not already know, you have to copy the link of this doc and put it into safari to veiw the HTML code. go to https://www.codechef.com/html-online-compiler to insert the code then press run to run it.&gt;
-&lt;If you want it to work, come see us, there is a very small and hard to find setting that u have to turn off 🦅. &gt;
+    <input type="text" id="userInput" placeholder="Type EXACT url here...">
+    
+    <!-- The Button -->
+    <button onclick="makeVariable(); randomSearch()">what do I put here?</button>
+
+
+&lt;🦅🦅🦅🦅🦅🦅🦅🦅&gt;
 &lt;&gt;
 &lt;&gt;
 &lt;&gt;
@@ -28,8 +32,13 @@
       let result = "";
       for (let i = 0; i < 9999; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
+        let inputElement = document.getElementById("userInput");
+            
+            // 2. Assign the value to the variable
+            let myVariable = inputElement.value;
+            
       }
-      window.open("https://www.youtube.com/search?q=" + result, "_blank");
+      window.open("myVariablesearch?q=" + result, "_blank");
     }
   </script>
 </body>
