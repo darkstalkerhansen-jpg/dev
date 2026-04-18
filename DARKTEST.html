@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Search Generator</title>
+</head>
+<body>
+    <input type="text" id="userInput" placeholder="google.com">
+    <button onclick="randomSearch()">Search</button>
+
+<script>
+function randomSearch() {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    // Create a shorter random string for better usability
+    for (let i = 0; i < 10; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    // Move this outside the loop
+    let inputElement = document.getElementById("userInput");
+    let myVariable = inputElement.value || "google.com"; // Default if empty
+
+    // Open the window
+    window.open("https://" + myVariable + "/search?q=" + result, "_blank");
+}
+</script>
+</body>
+</html>

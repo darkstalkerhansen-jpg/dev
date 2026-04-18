@@ -4,10 +4,10 @@
   <title>Random Search Generator</title>
 </head>
 <body>
-    <input type="text" id="userInput" placeholder="Type EXACT url here...">
+    <input type="text" id="userInput" placeholder="webname.com...">
     
     <!-- The Button -->
-    <button onclick="makeVariable(); randomSearch()">what do I put here?</button>
+    <button onclick="randomSearch()">what do I put here?</button>
 
 
 &lt;🦅🦅🦅🦅🦅🦅🦅🦅&gt;
@@ -38,7 +38,7 @@
             let myVariable = inputElement.value;
             
       }
-      window.open("myVariablesearch?q=" + result, "_blank");
+      window.open("https://" + myVariable + "/search?q=" + result, "_blank");
     }
   </script>
 </body>
