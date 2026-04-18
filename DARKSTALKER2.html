@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Random Search Proxy</title>
+  <title>Random Search Generator</title>
 </head>
 <body>
-    <button onclick="randomSearch()">Go to Random Search</button>
-
-    <script>
-        function randomSearch() {
-            const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            let result = "";
-            for (let i = 0; i < 10; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            // THIS LINE CHANGES IT FROM OPENING A NEW TAB TO PROXYING
-            window.location.href = "https://www.youtube.com/search?q=" + result;
-        }
-    </script>
+&lt;IMPORTANT!!! if you did not already know, you have to copy the link of this doc and put it into safari to veiw the HTML code. go to https://www.codechef.com/html-online-compiler to insert the code then press run to run it.&gt;
+  <button onclick="randomSearch()">Search Random Stuff</button>
+&lt;If you want it to work, come see us, there is a very small and hard to find setting that u have to turn off 🦅. &gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;made by mainly ryan hansen but also oliver lenberg&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+&lt;&gt;
+  <script>
+    function randomSearch() {
+      const chars = "abcdefghijklmnopqrstuvwxyz0123456789œ∑´®†¥¨ˆø∆˙©ƒ∂ß出す位アブダビでßåß´®†¥¨";
+      let result = "";
+      for (let i = 0; i < 9999; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      window.open("https://www.youtube.com/search?q=" + result, "_blank");
+    }
+  </script>
 </body>
 </html>
